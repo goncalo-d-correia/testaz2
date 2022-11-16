@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: "template1-f1f8"
+    labels:
+        app: "template1-f1f8"
+spec:
+    type: LoadBalancer
+    ports:
+    - port: 12
+      targetPort: 12
+      protocol: TCP
+      name: http
+    selector:
+        app: "template1-f1f8"
