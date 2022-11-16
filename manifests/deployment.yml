@@ -1,0 +1,19 @@
+apiVersion : apps/v1
+kind: Deployment
+metadata:
+  name: "template1-9e44"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: "template1-9e44"
+  template:
+    metadata:
+      labels:
+        app: "template1-9e44"
+    spec:
+      containers:
+        - name: "template1-9e44"
+          image: "dasdac.azurecr.io/template1"
+          ports:
+          - containerPort: 22
