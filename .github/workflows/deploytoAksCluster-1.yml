@@ -1,0 +1,50 @@
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: dasdac.azurecr.io
+        username: ${{ secrets.acr_dasdac_username }}
+        password: ${{ secrets.acr_dasdac_password }}
+    
+    - name: Build and push image to ACR
+      id: build-image
+      run: |
+        docker build "$GITHUB_WORKSPACE/123123" -f  "131231" -t dasdac.azurecr.io/template1:${{ github.sha }} --label dockerfile-path=131231
+        docker push dasdac.azurecr.io/template1:${{ github.sha }}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{ secrets.aks_template1_kubeConfig }}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep template1963f | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace template1963f`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: template1963f
+        container-registry-url: dasdac.azurecr.io
+        container-registry-username: ${{ secrets.acr_dasdac_username }}
+        container-registry-password: ${{ secrets.acr_dasdac_password }}
+        secret-name: template1dockerauth
+       
+    - uses: azure/k8s-deploy@v1.2
+      with:
+        namespace: template1963f
+        manifests: |
+          manifests/deployment-1.yml
+          manifests/service-1.yml
+        images: |
+          dasdac.azurecr.io/template1:${{ github.sha }}
+        imagepullsecrets: |
+          template1dockerauth
